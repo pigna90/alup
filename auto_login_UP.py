@@ -11,6 +11,7 @@ import gi
 gi.require_version('Notify', '0.7')
 from gi.repository import Notify
 import base64
+import os
 
 #---LOGGING CONFIG---#
 logger = logging.getLogger('Auto Login UniPi')
@@ -22,6 +23,7 @@ fh.setLevel(logging.ERROR)
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
 ch.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
 # create formatter and add it to the handlers
 formatter = logging.Formatter('%(asctime)s - %(name)s - [%(levelname)s] - %(message)s')
 ch.setFormatter(formatter)
@@ -38,6 +40,7 @@ logout_url = "https://auth5.unipi.it/auth/perfigo_logout.jsp"
 def get_payload_login(response):
 	soup = BeautifulSoup(response.text, "html.parser")
 
+	logger.debug("Get payload for login")
 	payload_dic = collections.OrderedDict()
 	for element in soup.find("form").findAll("input"):
 		if element.has_attr("value"):
@@ -48,7 +51,8 @@ def get_payload_login(response):
 
 def get_payload_logout(response):
 	soup = BeautifulSoup(response.text, "html.parser")
-	
+
+	logger.debug("Get payload for logout")
 	payload_dic = collections.OrderedDict()
 	for element in soup.findAll("form")[1].findAll("input"):
 		if element.has_attr("value"):
@@ -59,6 +63,7 @@ def get_payload_logout(response):
 	
 def login(payload,url,s):
 	try:
+		logger.debug("Login")
 		response = s.post(url, data=payload)
 		if "Unknown user" in response.text:
 			logger.error("Unknown User")
@@ -66,13 +71,13 @@ def login(payload,url,s):
 			logger.error("Invalid username or password")
 	except requests.exceptions.RequestException as e:
 		logger.error(e)
-		
 		sys.exit(1)
 
 	return response
 
 def logout(s,payload):
 	try:
+		logger.debug("Logout")
 		s.get(logout_url,params={"user_key" : payload["userkey"]})
 		s.post(report_url, data=payload)
 	except requests.exceptions.RequestException as e:
@@ -103,6 +108,7 @@ def main():
 
 	# Build data for login post request
 	try:
+		logger.debug("Get parameter")
 		response_login = s.get(auth_url)
 	except requests.exceptions.RequestException as e:
 		logger.error(e)
@@ -135,12 +141,15 @@ def main():
 
 	# Post request for login
 	while True:
-		try:
-			reload_response = s.get("http://stackoverflow.com/")
-		except requests.exceptions.RequestException as e:
-			logger.error(e)
-			sys.exit(1)
-		if "You are being redirected to the network" in reload_response.text:
+		#try:
+			#logger.debug("Check connession")
+			#reload_response = s.get("http://stackoverflow.com/")
+		#except requests.exceptions.RequestException as e:
+			#logger.error(e)
+			#sys.exit(1)
+		#if "You are being redirected to the network" in reload_response.text:
+		if os.system("ping -c 1 stackoverflow.com") != 0:
+			logger.debug("Reconnection")
 			Hello=Notify.Notification.new("Auto UniPi Connection", "Login successfully", "dialog-information")
 			Hello.show()
 			response_logout = login(payload_login,auth_url,s)
