@@ -7,6 +7,8 @@ import collections
 import signal
 import sys
 import logging
+#import gi
+#gi.require_version('Notify', '0.7')
 from gi.repository import Notify
 import base64
 
@@ -86,20 +88,15 @@ def main():
 		sys.exit(1)
 	else:
 		cp = sys.argv[sys.argv.index("-cp")+1]
-		if len(sys.argv) > 1:
-			if sys.argv[1] == "--user_config":
+		if len(sys.argv) > 3:
+			if "--user_config" in sys.argv:
 				username = input("Username: ")
 				password = getpass.getpass()
 				user_config = open(cp,"wb")
 				user_config.write(base64.b64encode((username+":"+password).encode("utf-8")))
 				user_config.close()
-			elif sys.argv[1] == "--delete_user_config":
+			elif "--delete_user_config" in sys.argv:
 				pass
-			elif sys.argv[1] == "-cp":
-				pass
-			else:
-				print("Argument not valid")
-				sys.exit(1)
 		
 	s = requests.Session()
 	payload_logout = {}
@@ -119,7 +116,7 @@ def main():
 		user_config.close()
 	except IOError as e:
 		logger.error(e)
-		logger.info("Run with --config_user option")
+		logger.info("Run with --user_config option")
 		sys.exit(1)
 
 	decoded_user_pass = str(base64.b64decode(user_pass)).split("'")[1]
