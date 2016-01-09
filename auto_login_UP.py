@@ -100,7 +100,7 @@ def main():
 				user_config = open(cp,"wb")
 				user_config.write(base64.b64encode((username+":"+password).encode("utf-8")))
 				user_config.close()
-			elif "--delete_user_config" in sys.argv:
+			elif "--delete-user-config" in sys.argv:
 				pass
 		
 	s = requests.Session()
