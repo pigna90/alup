@@ -94,7 +94,7 @@ def main():
 	else:
 		cp = sys.argv[sys.argv.index("-cp")+1]
 		if len(sys.argv) > 3:
-			if "--user_config" in sys.argv:
+			if "--user-config" in sys.argv:
 				username = input("Username: ")
 				password = getpass.getpass()
 				user_config = open(cp,"wb")
@@ -154,7 +154,7 @@ def main():
 			Hello.show()
 			response_logout = login(payload_login,auth_url,s)
 			payload_logout = get_payload_logout(response_logout)
-		time.sleep(900)
+		time.sleep(60)
 
 if __name__ == "__main__":
     main()
