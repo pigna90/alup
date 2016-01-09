@@ -88,18 +88,23 @@ def logout(s,payload):
 
 def main():
 	Notify.init("Notify Init")
+	# Searching for config path
 	if "-cp" not in sys.argv:
 		logger.error("Config path not specified")
 		sys.exit(1)
 	else:
+		# Reading config path
 		cp = sys.argv[sys.argv.index("-cp")+1]
+		# If more than one parameters has passed
 		if len(sys.argv) > 3:
+			# Create new user config
 			if "--user-config" in sys.argv:
 				username = input("Username: ")
 				password = getpass.getpass()
 				user_config = open(cp,"wb")
 				user_config.write(base64.b64encode((username+":"+password).encode("utf-8")))
 				user_config.close()
+			# Delete an existing user config
 			elif "--delete-user-config" in sys.argv:
 				pass
 		
@@ -122,7 +127,7 @@ def main():
 		user_config.close()
 	except IOError as e:
 		logger.error(e)
-		logger.info("Run with --user_config option")
+		logger.info("Run with --user-config option")
 		sys.exit(1)
 
 	decoded_user_pass = str(base64.b64decode(user_pass)).split("'")[1]
