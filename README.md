@@ -12,7 +12,7 @@ $ alup.py -cp /path/to/config/file
 
 ```
 
-Create a user configuration:
+Create an user configuration:
 
 ```sh
 $ alup.py -cp /path/to/config/file --user-config
