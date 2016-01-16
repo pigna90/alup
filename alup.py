@@ -151,20 +151,21 @@ def main():
 
 	# Post request for login
 	while True:
-		#try:
-			#logger.debug("Check connession")
-			#reload_response = s.get("http://stackoverflow.com/")
-		#except requests.exceptions.RequestException as e:
-			#logger.error(e)
-			#sys.exit(1)
-		#if "You are being redirected to the network" in reload_response.text:
-		if os.system("ping -c 1 stackoverflow.com") != 0:
+		if internet_on() == False:
 			logger.debug("Reconnection")
 			Hello=Notify.Notification.new("Auto UniPi Connection", "Login successfully", "dialog-information")
 			Hello.show()
 			response_logout = login(payload_login,auth_url,s)
 			payload_logout = get_payload_logout(response_logout)
-		time.sleep(60)
+		time.sleep(5)
+
+def internet_on(url='https://github.com', timeout=5):
+	try:
+		_ = requests.head(url, timeout=timeout)
+		return True
+	except requests.ConnectionError:
+		pass
+	return False
 
 if __name__ == "__main__":
     main()
