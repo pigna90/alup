@@ -85,6 +85,11 @@ def logout(s,payload):
 		Hello=Notify.Notification.new("Auto UniPi Connection", "Login problems", "dialog-information")
 		Hello.show()
 		sys.exit(1)
+	except KeyError as e:
+		logger.error(e)
+		Hello=Notify.Notification.new("Auto UniPi Connection", "Logout error due to a failed login", "dialog-information")
+		Hello.show()
+		sys.exit(1)
 
 def main():
 	Notify.init("Notify Init")
