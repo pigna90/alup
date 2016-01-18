@@ -19,12 +19,9 @@ auth_url = "https://auth5.unipi.it/auth/perfigo_cm_validate.jsp"
 report_url = "https://auth5.unipi.it/auth/perfigo_report.jsp"
 logout_url = "https://auth5.unipi.it/auth/perfigo_logout.jsp"
 
+# Load loging configuration from json file
 def setup_logging(
-	default_path='logging.json', 
-	default_level=logging.INFO,
-	env_key='LOG_CFG'
-):
-	"""Setup logging configuration """
+	default_path='logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
 	path = default_path
 	value = os.getenv(env_key, None)
 	if value:
@@ -86,6 +83,7 @@ def logout(s,payload):
 	except requests.exceptions.RequestException as e:
 		logger.error(e)
 		Hello=Notify.Notification.new("Auto UniPi Connection", "Login problems", "dialog-information")
+		Hello.set_urgency(Notify.Urgency.CRITICAL)
 		Hello.show()
 		sys.exit(1)
 	except KeyError as e:
@@ -93,6 +91,34 @@ def logout(s,payload):
 		Hello=Notify.Notification.new("Auto UniPi Connection", "Logout error due to an incorrect login", "dialog-information")
 		Hello.show()
 		sys.exit(1)
+
+# Internet connection check
+def internet_on(url='https://github.com', timeout=7):
+	try:
+		_ = requests.head(url, timeout=timeout)
+		return True
+	except requests.ConnectionError:
+		pass
+	return False
+
+# Read and decrypt username and password from file
+# cp - path of file containing credential
+def get_credential(cp):
+	try:
+		user_config = open(cp,"rb")
+		user_pass = user_config.read()
+		user_config.close()
+	except IOError as e:
+		logger.error(e)
+		logger.info("Run with --user-config option")
+		sys.exit(1)
+
+	# Decrypting username and password with base64
+	decoded_user_pass = str(base64.b64decode(user_pass)).split("'")[1]
+	u = decoded_user_pass.split(":")[0]
+	p = decoded_user_pass.split(":")[1]
+
+	return u,p
 
 def main():
 	Notify.init("Notify Init")
@@ -125,22 +151,12 @@ def main():
 		response_login = s.get(auth_url)
 	except requests.exceptions.RequestException as e:
 		logger.error(e)
+		Hello=Notify.Notification.new("Auto UniPi Connection", "Unable to find web loging page", "dialog-information")
+		Hello.show()
 		sys.exit(1)
 	payload_login = get_payload_login(response_login)
 	
-	# Insert username and password on payload data
-	try:
-		user_config = open(cp,"rb")
-		user_pass = user_config.read()
-		user_config.close()
-	except IOError as e:
-		logger.error(e)
-		logger.info("Run with --user-config option")
-		sys.exit(1)
-
-	decoded_user_pass = str(base64.b64decode(user_pass)).split("'")[1]
-	payload_login["username"] = decoded_user_pass.split(":")[0]
-	payload_login["password"] = decoded_user_pass.split(":")[1]
+	payload_login["username"],payload_login["password"] = get_credential(cp)
 
 	def stop_handler(signal, frame):
 		logout(s,payload_logout)
@@ -161,15 +177,6 @@ def main():
 			response_logout = login(payload_login,auth_url,s)
 			payload_logout = get_payload_logout(response_logout)
 		time.sleep(5)
-
-# Internet connection check
-def internet_on(url='https://github.com', timeout=5):
-	try:
-		_ = requests.head(url, timeout=timeout)
-		return True
-	except requests.ConnectionError:
-		pass
-	return False
 
 if __name__ == "__main__":
     main()
