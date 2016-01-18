@@ -6,36 +6,39 @@ from bs4 import BeautifulSoup
 import collections
 import signal
 import sys
-import logging
+import logging.config
 import gi
 gi.require_version('Notify', '0.7')
 from gi.repository import Notify
 import base64
 import os
-
-#---LOGGING CONFIG---#
-logger = logging.getLogger('Auto Login UniPi')
-logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-fh = logging.FileHandler('errors.log')
-fh.setLevel(logging.ERROR)
-# create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
-ch.setLevel(logging.INFO)
-ch.setLevel(logging.DEBUG)
-# create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(name)s - [%(levelname)s] - %(message)s')
-ch.setFormatter(formatter)
-fh.setFormatter(formatter)
-# add the handlers to logger
-logger.addHandler(ch)
-logger.addHandler(fh)
+import json
 
 #---URL FOR REQUESTS---#
 auth_url = "https://auth5.unipi.it/auth/perfigo_cm_validate.jsp"
 report_url = "https://auth5.unipi.it/auth/perfigo_report.jsp"
 logout_url = "https://auth5.unipi.it/auth/perfigo_logout.jsp"
+
+def setup_logging(
+	default_path='logging.json', 
+	default_level=logging.INFO,
+	env_key='LOG_CFG'
+):
+	"""Setup logging configuration """
+	path = default_path
+	value = os.getenv(env_key, None)
+	if value:
+		path = value
+	if os.path.exists(path):
+		with open(path, 'rt') as f:
+			config = json.load(f)
+		logging.config.dictConfig(config)
+	else:
+		logging.basicConfig(level=default_level)
+
+# Logging configuration
+setup_logging()
+logger = logging.getLogger('Auto Login UniPi')
 
 def get_payload_login(response):
 	soup = BeautifulSoup(response.text, "html.parser")
@@ -149,7 +152,7 @@ def main():
 	signal.signal(signal.SIGTERM, stop_handler)
 	signal.signal(signal.SIGINT, stop_handler)
 
-	# Post request for login
+	# Infinite loop to check internet connection
 	while True:
 		if internet_on() == False:
 			logger.debug("Reconnection")
@@ -159,6 +162,7 @@ def main():
 			payload_logout = get_payload_logout(response_logout)
 		time.sleep(5)
 
+# Internet connection check
 def internet_on(url='https://github.com', timeout=5):
 	try:
 		_ = requests.head(url, timeout=timeout)
