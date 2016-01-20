@@ -13,11 +13,14 @@ from gi.repository import Notify
 import base64
 import os
 import json
+from os.path import expanduser
 
 #---URL FOR REQUESTS---#
 auth_url = "https://auth5.unipi.it/auth/perfigo_cm_validate.jsp"
 report_url = "https://auth5.unipi.it/auth/perfigo_report.jsp"
 logout_url = "https://auth5.unipi.it/auth/perfigo_logout.jsp"
+
+cp = expanduser("~") + "/.alup_user.conf"
 
 # Load loging configuration from json file
 def setup_logging(
@@ -93,12 +96,14 @@ def logout(s,payload):
 		sys.exit(1)
 
 # Internet connection check
-def internet_on(url='https://github.com', timeout=7):
+def internet_on(url='https://github.com', timeout=10):
 	try:
 		_ = requests.head(url, timeout=timeout)
 		return True
 	except requests.ConnectionError:
 		pass
+	#except requests.packages.urllib3.exceptions.ReadTimeoutError:
+	#	pass
 	return False
 
 # Read and decrypt username and password from file
@@ -122,38 +127,46 @@ def get_credential(cp):
 
 def main():
 	Notify.init("Notify Init")
-	# Searching for config path
-	if "-cp" not in sys.argv:
-		logger.error("Config path not specified")
-		sys.exit(1)
-	else:
-		# Reading config path
-		cp = sys.argv[sys.argv.index("-cp")+1]
-		# If more than one parameters has passed
-		if len(sys.argv) > 3:
-			# Create new user config
-			if "--user-config" in sys.argv:
-				username = input("Username: ")
-				password = getpass.getpass()
-				user_config = open(cp,"wb")
-				user_config.write(base64.b64encode((username+":"+password).encode("utf-8")))
-				user_config.close()
-			# Delete an existing user config
-			elif "--delete-user-config" in sys.argv:
-				pass
-		
+
+	# Searching arguments
+	if len(sys.argv) > 1:
+		# Create new user config
+		if "--user-config" in sys.argv:
+			username = input("Username: ")
+			password = getpass.getpass()
+			user_config = open(cp,"wb")
+			user_config.write(base64.b64encode((username+":"+password).encode("utf-8")))
+			user_config.close()
+		# Delete an existing user config
+		elif "--delete-user-config" in sys.argv:
+			pass
+			
 	s = requests.Session()
 	payload_logout = {}
 
 	# Build data for login post request
-	try:
-		logger.debug("Get parameter")
-		response_login = s.get(auth_url)
-	except requests.exceptions.RequestException as e:
-		logger.error(e)
-		Hello=Notify.Notification.new("Auto UniPi Connection", "Unable to find web loging page", "dialog-information")
-		Hello.show()
-		sys.exit(1)
+	web_login_found = False
+	while(web_login_found != True):
+		try:
+			logger.debug("Get parameter")
+			response_login = s.get(auth_url)
+			web_login_found = True
+		#except requests.exceptions.RequestException as e:
+			#logger.error(e)
+			#Hello=Notify.Notification.new("Auto UniPi Connection", "Unable to find web loging page", "dialog-information")
+			#Hello.show()
+			#time.sleep(10)
+		#except requests.exceptions.NewConnectionError as e:
+			#logger.error(e)
+			#Hello=Notify.Notification.new("Auto UniPi Connection", "Unable to find web loging page", "dialog-information")
+			#Hello.show()
+			#time.sleep(10)
+		except requests.exceptions.ConnectionError as e:
+			logger.error(e)
+			Hello=Notify.Notification.new("Auto UniPi Connection", "Unable to find web loging page", "dialog-information")
+			Hello.show()
+			time.sleep(10)
+			
 	payload_login = get_payload_login(response_login)
 	
 	payload_login["username"],payload_login["password"] = get_credential(cp)
