@@ -102,8 +102,8 @@ def internet_on(url='https://github.com', timeout=10):
 		return True
 	except requests.ConnectionError:
 		pass
-	#except requests.packages.urllib3.exceptions.ReadTimeoutError:
-	#	pass
+	except requests.Timeout:
+		pass
 	return False
 
 # Read and decrypt username and password from file
