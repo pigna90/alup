@@ -14,6 +14,7 @@ import base64
 import os
 import json
 from os.path import expanduser
+import pickle
 
 #---URL FOR REQUESTS---#
 auth_url = "https://auth5.unipi.it/auth/perfigo_cm_validate.jsp"
@@ -101,8 +102,13 @@ def internet_on(url='https://github.com', timeout=10):
 		_ = requests.head(url, timeout=timeout)
 		return True
 	except requests.ConnectionError:
+		logger.debug("Exception: Connection Errore")
 		pass
 	except requests.Timeout:
+		logger.debug("Exception: Timeout")
+		pass
+	except Exception:
+		logger.debug("Exception: Generic")
 		pass
 	return False
 
@@ -125,6 +131,16 @@ def get_credential(cp):
 
 	return u,p
 
+# Serialize a object
+def save_obj(obj, name):
+    with open('/tmp/obj/'+ name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+# Deserialize a object
+def load_obj(name):
+    with open('/tmp/obj/' + name + '.pkl', 'rb') as f:
+        return pickle.load(f)
+
 def main():
 	Notify.init("Notify Init")
 
@@ -143,13 +159,15 @@ def main():
 			
 	s = requests.Session()
 	payload_logout = {}
+	if(os.path.isfile("obj/payload_logout.pkl")):
+		payload_logout = load_obj("payload_logout")
 
 	# Build data for login post request
 	web_login_found = False
-	while(web_login_found != True):
+	while(web_login_found == False):
 		try:
 			logger.debug("Get parameter")
-			response_login = s.get(auth_url)
+			response_login = s.get(auth_url) # Max time requests!!!!
 			web_login_found = True
 		#except requests.exceptions.RequestException as e:
 			#logger.error(e)
@@ -166,9 +184,8 @@ def main():
 			Hello=Notify.Notification.new("Auto UniPi Connection", "Unable to find web loging page", "dialog-information")
 			Hello.show()
 			time.sleep(10)
-			
+
 	payload_login = get_payload_login(response_login)
-	
 	payload_login["username"],payload_login["password"] = get_credential(cp)
 
 	def stop_handler(signal, frame):
@@ -189,6 +206,7 @@ def main():
 			Hello.show()
 			response_logout = login(payload_login,auth_url,s)
 			payload_logout = get_payload_logout(response_logout)
+			save_obj(payload_logout,"payload_logout")
 		time.sleep(5)
 
 if __name__ == "__main__":
