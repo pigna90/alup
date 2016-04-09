@@ -41,6 +41,7 @@ def setup_logging(
 setup_logging()
 logger = logging.getLogger('Auto Login UniPi')
 
+# Get submit login from web page
 def get_payload_login(response):
 	soup = BeautifulSoup(response.text, "html.parser")
 
@@ -53,6 +54,7 @@ def get_payload_login(response):
 
 	return payload_dic
 
+# Get submit logout from web page
 def get_payload_logout(response):
 	soup = BeautifulSoup(response.text, "html.parser")
 
@@ -64,7 +66,8 @@ def get_payload_logout(response):
 				payload_dic[element["name"]] = element["value"]
 
 	return payload_dic
-	
+
+# Make submit login
 def login(payload,url,s):
 	try:
 		logger.debug("Login")
@@ -79,6 +82,7 @@ def login(payload,url,s):
 
 	return response
 
+# Make submit logout
 def logout(s,payload):
 	try:
 		logger.debug("Logout")
@@ -102,7 +106,7 @@ def internet_on(url='https://github.com', timeout=10):
 		_ = requests.head(url, timeout=timeout)
 		return True
 	except requests.ConnectionError:
-		logger.debug("Exception: Connection Errore")
+		logger.debug("Exception: Connection Error")
 		pass
 	except requests.Timeout:
 		logger.debug("Exception: Timeout")
@@ -133,13 +137,22 @@ def get_credential(cp):
 
 # Serialize a object
 def save_obj(obj, name):
-    with open('/tmp/obj/'+ name + '.pkl', 'wb') as f:
+    with open('obj/'+ name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 # Deserialize a object
 def load_obj(name):
-    with open('/tmp/obj/' + name + '.pkl', 'rb') as f:
+    with open('obj/' + name + '.pkl', 'rb') as f:
         return pickle.load(f)
+
+# Check UniPi domain by searching for Serra web login page
+def is_unipi():
+	try:
+		s = requests.get("https://github.com",verify=False)
+	except requests.ConnectionError:
+		logger.debug("Exception is_unipi: Connection Error")
+		return False
+	return "auth" in s.text
 
 def main():
 	Notify.init("Notify Init")
@@ -158,35 +171,12 @@ def main():
 			pass
 			
 	s = requests.Session()
+
 	payload_logout = {}
+	# Check if exist a payload object serialezed
+	# Sometimes it's due to an incorrect logout
 	if(os.path.isfile("obj/payload_logout.pkl")):
 		payload_logout = load_obj("payload_logout")
-
-	# Build data for login post request
-	web_login_found = False
-	while(web_login_found == False):
-		try:
-			logger.debug("Get parameter")
-			response_login = s.get(auth_url) # Max time requests!!!!
-			web_login_found = True
-		#except requests.exceptions.RequestException as e:
-			#logger.error(e)
-			#Hello=Notify.Notification.new("Auto UniPi Connection", "Unable to find web loging page", "dialog-information")
-			#Hello.show()
-			#time.sleep(10)
-		#except requests.exceptions.NewConnectionError as e:
-			#logger.error(e)
-			#Hello=Notify.Notification.new("Auto UniPi Connection", "Unable to find web loging page", "dialog-information")
-			#Hello.show()
-			#time.sleep(10)
-		except requests.exceptions.ConnectionError as e:
-			logger.error(e)
-			Hello=Notify.Notification.new("Auto UniPi Connection", "Unable to find web loging page", "dialog-information")
-			Hello.show()
-			time.sleep(10)
-
-	payload_login = get_payload_login(response_login)
-	payload_login["username"],payload_login["password"] = get_credential(cp)
 
 	def stop_handler(signal, frame):
 		logout(s,payload_logout)
@@ -200,10 +190,18 @@ def main():
 
 	# Infinite loop to check internet connection
 	while True:
-		if internet_on() == False:
+		# Make reconnection if internet connection is down and the domain is UniPi
+		if internet_on() == False and is_unipi():
 			logger.debug("Reconnection")
 			Hello=Notify.Notification.new("Auto UniPi Connection", "Login successfully", "dialog-information")
 			Hello.show()
+			response_login = s.get(auth_url)
+
+			# Login
+			payload_login = get_payload_login(response_login)
+			payload_login["username"],payload_login["password"] = get_credential(cp)
+
+			# Payload Logout and serialization
 			response_logout = login(payload_login,auth_url,s)
 			payload_logout = get_payload_logout(response_logout)
 			save_obj(payload_logout,"payload_logout")
