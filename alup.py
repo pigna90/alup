@@ -15,6 +15,7 @@ import os
 import json
 from os.path import expanduser
 import pickle
+import argparse
 
 #---URL FOR REQUESTS---#
 auth_url = "https://auth5.unipi.it/auth/perfigo_cm_validate.jsp"
@@ -157,19 +158,23 @@ def is_unipi():
 def main():
 	Notify.init("Notify Init")
 
-	# Searching arguments
-	if len(sys.argv) > 1:
-		# Create new user config
-		if "--user-config" in sys.argv:
-			username = input("Username: ")
-			password = getpass.getpass()
-			user_config = open(cp,"wb")
-			user_config.write(base64.b64encode((username+":"+password).encode("utf-8")))
-			user_config.close()
-		# Delete an existing user config
-		elif "--delete-user-config" in sys.argv:
-			pass
-			
+	parser = argparse.ArgumentParser(description='Automatic Login for University of Pisa (Captive Portal)')
+	group = parser.add_mutually_exclusive_group(required=False) 
+	group.add_argument('--new-profile',dest='new',action='store_true', help='Create a new user login profile')
+	group.add_argument('--delete-profile',dest='delete',action='store_true', help='Delete existing user profile')
+	args = parser.parse_args()
+	
+	# Create a new user login profile
+	if args.new :
+		username = input("Username: ")
+		password = getpass.getpass()
+		user_config = open(cp,"wb")
+		user_config.write(base64.b64encode((username+":"+password).encode("utf-8")))
+		user_config.close()
+	# Delete an existing user login profile
+	elif args.delete :
+		pass
+
 	s = requests.Session()
 
 	payload_logout = {}
