@@ -158,7 +158,7 @@ def is_unipi():
 def main():
 	Notify.init("Notify Init")
 
-	parser = argparse.ArgumentParser(description='Automatic Login for University of Pisa (Captive Portal)')
+	parser = argparse.ArgumentParser(description='Automatic Login for University of Pisa (Captive Portal)',add_help=True)
 	group = parser.add_mutually_exclusive_group(required=False) 
 	group.add_argument('--new-profile',dest='new',action='store_true', help='Create a new user login profile')
 	group.add_argument('--delete-profile',dest='delete',action='store_true', help='Delete existing user profile')
