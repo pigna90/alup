@@ -7,9 +7,6 @@ import collections
 import signal
 import sys
 import logging.config
-import gi
-gi.require_version('Notify', '0.7')
-from gi.repository import Notify
 import base64
 import os
 import json
@@ -25,6 +22,9 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 auth_url = "auth/perfigo_cm_validate.jsp"
 report_url = "https://auth5.unipi.it/auth/perfigo_report.jsp"
 logout_url = "https://auth5.unipi.it/auth/perfigo_logout.jsp"
+
+
+pwd = "/run/media/pigna/Dati/Ale-Dati/Progetti Personali/Login UniPi"
 
 cp = expanduser("~") + "/.alup_user.conf"
 
@@ -95,14 +95,9 @@ def logout(s,payload):
 		s.post(report_url, data=payload)
 	except requests.exceptions.RequestException as e:
 		logger.error(e)
-		Hello=Notify.Notification.new("Auto UniPi Connection", "Login problems", "dialog-information")
-		Hello.set_urgency(Notify.Urgency.CRITICAL)
-		Hello.show()
 		sys.exit(1)
 	except KeyError as e:
 		logger.error(e)
-		Hello=Notify.Notification.new("Auto UniPi Connection", "Logout error due to an incorrect login", "dialog-information")
-		Hello.show()
 		sys.exit(1)
 
 # Internet connection check
@@ -142,12 +137,12 @@ def get_credential(cp):
 
 # Serialize a object
 def save_obj(obj, name):
-    with open('obj/'+ name + '.pkl', 'wb') as f:
+    with open(pwd + '/obj/'+ name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 # Deserialize a object
 def load_obj(name):
-    with open('obj/' + name + '.pkl', 'rb') as f:
+    with open(pwd + '/obj/' + name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
 # Check UniPi domain by searching for Serra web login page
@@ -168,7 +163,6 @@ def get_auth_domain():
 	return s.text.split("URL")[1].split("=")[1].split("auth/")[0]
 
 def main():
-	Notify.init("Notify Init")
 
 	parser = argparse.ArgumentParser(description='Automatic Login for University of Pisa (Captive Portal)',add_help=True)
 	group = parser.add_mutually_exclusive_group(required=False) 
@@ -192,14 +186,12 @@ def main():
 	payload_logout = {}
 	# Check if exist a payload object serialezed
 	# Sometimes it's due to an incorrect logout
-	if(os.path.isfile("./obj/payload_logout.pkl")):
+	if(os.path.isfile(pwd + "/obj/payload_logout.pkl")):
 		payload_logout = load_obj("payload_logout")
 
 	def stop_handler(signal, frame):
 		logout(s,payload_logout)
 		logger.debug("Sigterm signal recieved")
-		Hello=Notify.Notification.new("Auto UniPi Connection", "Logout", "dialog-information")
-		Hello.show()
 		sys.exit(0)
 
 	signal.signal(signal.SIGTERM, stop_handler)
@@ -210,8 +202,6 @@ def main():
 		# Make reconnection if internet connection is down and the domain is UniPi
 		if internet_on() == False and is_unipi():
 			logger.debug("Reconnection")
-			Hello=Notify.Notification.new("Auto UniPi Connection", "Login successfully", "dialog-information")
-			Hello.show()
 			domain_url = get_auth_domain()
 			response_login = s.get(domain_url + auth_url)
 
