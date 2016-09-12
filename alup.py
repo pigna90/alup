@@ -16,9 +16,13 @@ import json
 from os.path import expanduser
 import pickle
 import argparse
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 
 #---URL FOR REQUESTS---#
-auth_url = "https://auth5.unipi.it/auth/perfigo_cm_validate.jsp"
+auth_url = "auth/perfigo_cm_validate.jsp"
 report_url = "https://auth5.unipi.it/auth/perfigo_report.jsp"
 logout_url = "https://auth5.unipi.it/auth/perfigo_logout.jsp"
 
@@ -155,6 +159,14 @@ def is_unipi():
 		return False
 	return "auth" in s.text
 
+def get_auth_domain():
+	try:
+		s = requests.get("https://github.com",verify=False)
+	except requests.ConnectionError:
+		logger.debug("Exception is_unipi: Connection Error")
+		return False
+	return s.text.split("URL")[1].split("=")[1].split("auth/")[0]
+
 def main():
 	Notify.init("Notify Init")
 
@@ -180,7 +192,7 @@ def main():
 	payload_logout = {}
 	# Check if exist a payload object serialezed
 	# Sometimes it's due to an incorrect logout
-	if(os.path.isfile("obj/payload_logout.pkl")):
+	if(os.path.isfile("./obj/payload_logout.pkl")):
 		payload_logout = load_obj("payload_logout")
 
 	def stop_handler(signal, frame):
@@ -200,14 +212,15 @@ def main():
 			logger.debug("Reconnection")
 			Hello=Notify.Notification.new("Auto UniPi Connection", "Login successfully", "dialog-information")
 			Hello.show()
-			response_login = s.get(auth_url)
+			domain_url = get_auth_domain()
+			response_login = s.get(domain_url + auth_url)
 
 			# Login
 			payload_login = get_payload_login(response_login)
 			payload_login["username"],payload_login["password"] = get_credential(cp)
 
 			# Payload Logout and serialization
-			response_logout = login(payload_login,auth_url,s)
+			response_logout = login(payload_login,domain_url + auth_url,s)
 			payload_logout = get_payload_logout(response_logout)
 			save_obj(payload_logout,"payload_logout")
 		time.sleep(5)
