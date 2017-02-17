@@ -18,12 +18,13 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
-#---URL FOR REQUESTS---#
+#---JSP FOR REQUESTS---#
 auth_url = "auth/perfigo_cm_validate.jsp"
-report_url = "https://auth5.unipi.it/auth/perfigo_report.jsp"
-logout_url = "https://auth5.unipi.it/auth/perfigo_logout.jsp"
+report_url = "auth/perfigo_report.jsp"
+logout_url = "auth/perfigo_logout.jsp"
 
 
+# !! Da eliminare !!
 pwd = "/run/media/pigna/Dati/Ale-Dati/Progetti Personali/Login UniPi"
 
 cp = expanduser("~") + "/.alup_user.conf"
@@ -91,8 +92,13 @@ def login(payload,url,s):
 def logout(s,payload):
 	try:
 		logger.debug("Logout")
-		s.get(logout_url,params={"user_key" : payload["userkey"]})
-		s.post(report_url, data=payload)
+		domain_url = payload["domain"]
+
+		# Deleting domain element before sending
+		del payload["domain"]
+
+		s.get(domain_url + logout_url, params={"user_key" : payload["userkey"]})
+		s.post(domain_url + report_url, data=payload)
 	except requests.exceptions.RequestException as e:
 		logger.error(e)
 		sys.exit(1)
@@ -154,22 +160,26 @@ def is_unipi():
 		return False
 	return "auth" in s.text
 
+# Get domain for login and logout
 def get_auth_domain():
 	try:
 		s = requests.get("https://github.com",verify=False)
 	except requests.ConnectionError:
 		logger.debug("Exception is_unipi: Connection Error")
 		return False
-	return s.text.split("URL")[1].split("=")[1].split("auth/")[0]
+	while True:
+		logger.debug("Trying to get auth URL domain...")
+		if "auth" in s.text:
+			return s.text.split("URL")[1].split("=")[1].split("auth/")[0]
+		time.sleep(2)
 
 def main():
-
 	parser = argparse.ArgumentParser(description='Automatic Login for University of Pisa (Captive Portal)',add_help=True)
-	group = parser.add_mutually_exclusive_group(required=False) 
+	group = parser.add_mutually_exclusive_group(required=False)
 	group.add_argument('--new-profile',dest='new',action='store_true', help='Create a new user login profile')
 	group.add_argument('--delete-profile',dest='delete',action='store_true', help='Delete existing user profile')
 	args = parser.parse_args()
-	
+
 	# Create a new user login profile
 	if args.new :
 		username = input("Username: ")
@@ -191,7 +201,7 @@ def main():
 
 	def stop_handler(signal, frame):
 		logout(s,payload_logout)
-		logger.debug("Sigterm signal recieved")
+		logger.debug("Sigterm/Sigint signal recieved")
 		sys.exit(0)
 
 	signal.signal(signal.SIGTERM, stop_handler)
@@ -212,6 +222,8 @@ def main():
 			# Payload Logout and serialization
 			response_logout = login(payload_login,domain_url + auth_url,s)
 			payload_logout = get_payload_logout(response_logout)
+			# Saving domain in payload for logout
+			payload_logout["domain"] = domain_url
 			save_obj(payload_logout,"payload_logout")
 		time.sleep(5)
 
