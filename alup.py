@@ -23,15 +23,16 @@ auth_url = "auth/perfigo_cm_validate.jsp"
 report_url = "auth/perfigo_report.jsp"
 logout_url = "auth/perfigo_logout.jsp"
 
+work_directory = ""
+logger = ""
 
-# !! Da eliminare !!
-pwd = "/run/media/pigna/Dati/Ale-Dati/Progetti Personali/Login UniPi"
-
-cp = expanduser("~") + "/.alup_user.conf"
+payload_logout_fname = "obj/payload_logout.pkl"
+credentials_fname = ".alup_user.conf"
 
 # Load loging configuration from json file
 def setup_logging(
-	default_path='logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
+	default_path=work_directory + 'logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
+	print(work_directory)
 	path = default_path
 	value = os.getenv(env_key, None)
 	if value:
@@ -42,10 +43,6 @@ def setup_logging(
 		logging.config.dictConfig(config)
 	else:
 		logging.basicConfig(level=default_level)
-
-# Logging configuration
-setup_logging()
-logger = logging.getLogger('Auto Login UniPi')
 
 # Get submit login from web page
 def get_payload_login(response):
@@ -99,6 +96,8 @@ def logout(s,payload):
 
 		s.get(domain_url + logout_url, params={"user_key" : payload["userkey"]})
 		s.post(domain_url + report_url, data=payload)
+		if(os.path.exists(work_directory + payload_logout_fname)):
+			os.remove(work_directory + payload_logout_fname)
 	except requests.exceptions.RequestException as e:
 		logger.error(e)
 		sys.exit(1)
@@ -143,13 +142,13 @@ def get_credential(cp):
 
 # Serialize a object
 def save_obj(obj, name):
-    with open(pwd + '/obj/'+ name + '.pkl', 'wb') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+	with open(work_directory + 'obj/'+ name + '.pkl', 'wb') as f:
+		pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 # Deserialize a object
-def load_obj(name):
-    with open(pwd + '/obj/' + name + '.pkl', 'rb') as f:
-        return pickle.load(f)
+def load_obj(fname):
+	with open(fname, 'rb') as f:
+		return pickle.load(f)
 
 # Check UniPi domain by searching for Serra web login page
 def is_unipi():
@@ -178,13 +177,26 @@ def main():
 	group = parser.add_mutually_exclusive_group(required=False)
 	group.add_argument('--new-profile',dest='new',action='store_true', help='Create a new user login profile')
 	group.add_argument('--delete-profile',dest='delete',action='store_true', help='Delete existing user profile')
+	parser.add_argument('-c', dest='config', required=True, help='Path to configuration folder')
 	args = parser.parse_args()
+
+	# Logging configuration
+	global work_directory
+	work_directory = args.config
+	setup_logging()
+	# Check if alup work directory exists
+	if os.path.isdir(work_directory) == False:
+		print("Configuration folder not found")
+		sys.exit(1)
+
+	global logger
+	logger = logging.getLogger('Auto Login UniPi')
 
 	# Create a new user login profile
 	if args.new :
 		username = input("Username: ")
 		password = getpass.getpass()
-		user_config = open(cp,"wb")
+		user_config = open(work_directory + credentials_fname, "wb")
 		user_config.write(base64.b64encode((username+":"+password).encode("utf-8")))
 		user_config.close()
 	# Delete an existing user login profile
@@ -196,8 +208,8 @@ def main():
 	payload_logout = {}
 	# Check if exist a payload object serialezed
 	# Sometimes it's due to an incorrect logout
-	if(os.path.isfile(pwd + "/obj/payload_logout.pkl")):
-		payload_logout = load_obj("payload_logout")
+	if(os.path.isfile(work_directory + payload_logout_fname)):
+		payload_logout = load_obj(work_directory + payload_logout_fname)
 
 	def stop_handler(signal, frame):
 		logout(s,payload_logout)
@@ -217,7 +229,7 @@ def main():
 
 			# Login
 			payload_login = get_payload_login(response_login)
-			payload_login["username"],payload_login["password"] = get_credential(cp)
+			payload_login["username"],payload_login["password"] = get_credential(work_directory + credentials_fname)
 
 			# Payload Logout and serialization
 			response_logout = login(payload_login,domain_url + auth_url,s)
