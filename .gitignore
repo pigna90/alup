@@ -1,2 +1,3 @@
 *.log
 obj/*
+.alup_user.conf
