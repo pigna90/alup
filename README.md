@@ -4,7 +4,7 @@ Alup (**A**utomatic **L**ogin for **U**niversity of **P**isa) is a python script
 After configuration of Alup with your credential, the login session will be managed automatically  in order to avoid the logout due to timeout or connection issues.  
   
 ### Why Alup?
-The first reason is my Raspberry Pi. In fact Alup helps me to login without monitor through ssh by managing the the captive portal connection.  
+The first reason is my Raspberry Pi. In fact Alup helps me to login without monitor through ssh by managing the captive portal connection.  
 During the last year i used Alup also for my laptop and i decide to improve it in order to help someone else.  
 I'm lazy, that's all.
 
