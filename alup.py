@@ -40,6 +40,9 @@ def setup_logging(default_path=work_directory + 'logging.json', default_level=lo
 	if os.path.exists(path):
 		with open(path, 'rt') as f:
 			config = json.load(f)
+		handlers = config["handlers"]
+		handlers["info_file_handler"]["filename"] = work_directory + handlers["info_file_handler"]["filename"]
+		handlers["error_file_handler"]["filename"] = work_directory + handlers["error_file_handler"]["filename"]
 		logging.config.dictConfig(config)
 	else:
 		logging.basicConfig(level=default_level)
@@ -130,7 +133,7 @@ def get_credential(cp):
 		user_config.close()
 	except IOError as e:
 		logger.error(e)
-		logger.info("Run with --user-config option")
+		logger.info("Run with --new-profile option")
 		sys.exit(1)
 
 	# Decrypting username and password with base64
