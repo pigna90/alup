@@ -1,5 +1,6 @@
 import argparse
 import os
+import stat
 import getpass
 from shutil import copyfile
 import fileinput
@@ -32,7 +33,10 @@ def main():
 			copyfile(f ,alup_dir + f)
 
 		print("Copying alup.py -> /usr/bin/alup")
-		copyfile("alup.py", "/usr/bin/alup")
+		copyfile("alup.py", "alup")
+		st = os.stat("alup")
+		print("Exec permission to alup")
+		os.chmod("alup", st.st_mode | stat.S_IXOTH | stat.S_IWGRP | stat.S_IEXEC)
 
 		with fileinput.FileInput("alup.service", inplace=True, backup='.bak') as file:
 			for line in file:
@@ -41,11 +45,6 @@ def main():
 				else:
 					print(line.replace("config_path", alup_dir), end='')
 
-		if os.path.exists("/etc/systemd/system/"):
-			print("Copying alup.service -> /etc/systemd/system/alup.service")
-			copyfile("alup.service", "/etc/systemd/system/alup.service")
-		else:
-			print("WARNING: systemd's folder not found"
 	elif(args.action == "remove"):
 		pass
 
