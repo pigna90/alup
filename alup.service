@@ -1,0 +1,12 @@
+[Unit]
+Description=Alup captive-portal login daemon.
+Wants=network-online.target
+After=network.target network-online.target
+
+[Service]
+User=user_name
+Type=simple
+ExecStart=/usr/bin/alup -c config_path
+
+[Install]
+WantedBy=multi-user.target
