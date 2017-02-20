@@ -179,13 +179,17 @@ def main():
 	group = parser.add_mutually_exclusive_group(required=False)
 	group.add_argument('--new-profile',dest='new',action='store_true', help='Create a new user login profile')
 	group.add_argument('--delete-profile',dest='delete',action='store_true', help='Delete existing user profile')
-	parser.add_argument('-c', dest='config', required=True, help='Path to configuration folder')
+	parser.add_argument('-c', dest='config', required=False, help='Path to configuration folder')
 	args = parser.parse_args()
 
-	# Logging configuration
 	global work_directory
-	work_directory = args.config
+	if args.config is None:
+		work_directory = os.path.expanduser("~") + "./alup"
+	else:
+		work_directory = args.config
+
 	setup_logging()
+
 	# Check if alup work directory exists
 	if os.path.isdir(work_directory) == False:
 		# !!This should be an error log messages!!
