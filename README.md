@@ -51,9 +51,9 @@ $ alup -c /path/to/.alup
 ```
 **Note**: for more commands, run the scripts with -h (--help) command.
 ### Auto-run (systemd)
-A systemd service will be created after installation. Copy it in systemd services directory:
+A systemd service will be created after installation. Copy it in systemd services directory as super user:
 ```sh
-$ cp alup.service /etc/systemd/system/
+# cp alup.service /etc/systemd/system/
 
 ```
 Start and test the service:
