@@ -3,6 +3,7 @@ import os
 import stat
 import getpass
 from shutil import copyfile
+import shutil
 import fileinput
 
 def main():
@@ -32,10 +33,10 @@ def main():
 			print("Copying " + f + " -> " + alup_dir + f)
 			copyfile(f ,alup_dir + f)
 
-		print("Copying alup.py -> /usr/bin/alup")
+		print("Copying alup.py -> alup")
 		copyfile("alup.py", "alup")
 		st = os.stat("alup")
-		print("Exec permission to alup")
+		print("Exec chmod +x alup")
 		os.chmod("alup", st.st_mode | stat.S_IXOTH | stat.S_IWGRP | stat.S_IEXEC)
 
 		with fileinput.FileInput("alup.service", inplace=True, backup='.bak') as file:
@@ -45,8 +46,21 @@ def main():
 				else:
 					print(line.replace("config_path", alup_dir), end='')
 
+		print("\nComplete by run as super user:")
+		print("# cp alup /usr/bin/")
+		print("If you have systemd also:")
+		print("# cp alup.service /etc/systemd/system/ \n")
+
 	elif(args.action == "remove"):
-		pass
+		if os.path.exists(alup_dir):
+			print("Deleting " + alup_dir)
+			shutil.rmtree(alup_dir)
+			print("\nComplete by run as super user:")
+			print("# rm /usr/bin/alup")
+			print("If you have systemd, disable the service and:")
+			print("# rm /etc/systemd/system/alup.service \n")
+		else:
+			print("Alup is not installed")
 
 if __name__ == "__main__":
     main()
