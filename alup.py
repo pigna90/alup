@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import requests
 import socket
 import time
@@ -15,8 +17,8 @@ import pickle
 import argparse
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+# Disable request warning caused by URL forwarding to captive portal page
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
 
 #---JSP FOR REQUESTS---#
 auth_url = "auth/perfigo_cm_validate.jsp"
@@ -186,6 +188,7 @@ def main():
 	setup_logging()
 	# Check if alup work directory exists
 	if os.path.isdir(work_directory) == False:
+		# !!This should be an error log messages!!
 		print("Configuration folder not found")
 		sys.exit(1)
 
