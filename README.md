@@ -1,4 +1,4 @@
-# Alup
+# Alup (Automatic Login for University of Pisa)
 
 Alup (**A**utomatic **L**ogin for **U**niversity of **P**isa) is a python script that provide to keep you logged on **University Of Pisa captive portal (Area SerRA)**.
 After configuration of Alup with your credential, the login session will be managed automatically  in order to avoid the logout due to timeout or connection issues.  
