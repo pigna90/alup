@@ -10,8 +10,9 @@ I'm lazy, that's all.
 
 ### Extra modules
 Alup works with these extra python modules:  
-* bs4
-* requests
+* **bs4**
+* **requests**
+
 Install them simply by using pip.
 
 ### Installation
