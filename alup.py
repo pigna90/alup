@@ -30,9 +30,10 @@ logger = ""
 
 payload_logout_fname = "obj/payload_logout.pkl"
 credentials_fname = ".alup_user.conf"
+logging_fname = "logging.json"
 
 # Load loging configuration from json file
-def setup_logging(default_path=work_directory + 'logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
+def setup_logging(default_path, default_level=logging.INFO, env_key='LOG_CFG'):
 	path = default_path
 	value = os.getenv(env_key, None)
 	if value:
@@ -195,7 +196,7 @@ def main():
 		print("Configuration folder not found")
 		sys.exit(1)
 
-	setup_logging()
+	setup_logging(work_directory + logging_fname)
 	global logger
 	logger = logging.getLogger('Auto Login UniPi')
 
