@@ -28,8 +28,8 @@ logout_url = "auth/perfigo_logout.jsp"
 work_directory = ""
 logger = ""
 
-payload_logout_fname = "/obj/payload_logout.pkl"
-credentials_fname = "/.alup_user.conf"
+payload_logout_fname = "obj/payload_logout.pkl"
+credentials_fname = ".alup_user.conf"
 
 # Load loging configuration from json file
 def setup_logging(default_path=work_directory + 'logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
