@@ -208,7 +208,10 @@ def main():
 		user_config.close()
 	# Delete an existing user login profile
 	elif args.delete :
-		pass
+		if os.path.exists(work_directory + ".alup_user.conf"):
+			os.remove(work_directory + ".alup_user.conf")
+			logger.debug("Profile deleted")
+		sys.exit(0)
 
 	s = requests.Session()
 
