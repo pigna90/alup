@@ -28,13 +28,11 @@ logout_url = "auth/perfigo_logout.jsp"
 work_directory = ""
 logger = ""
 
-payload_logout_fname = "obj/payload_logout.pkl"
-credentials_fname = ".alup_user.conf"
+payload_logout_fname = "/obj/payload_logout.pkl"
+credentials_fname = "/.alup_user.conf"
 
 # Load loging configuration from json file
-def setup_logging(
-	default_path=work_directory + 'logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
-	print(work_directory)
+def setup_logging(default_path=work_directory + 'logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
 	path = default_path
 	value = os.getenv(env_key, None)
 	if value:
@@ -144,7 +142,7 @@ def get_credential(cp):
 
 # Serialize a object
 def save_obj(obj, name):
-	with open(work_directory + 'obj/'+ name + '.pkl', 'wb') as f:
+	with open(work_directory + '/obj/'+ name + '.pkl', 'wb') as f:
 		pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 # Deserialize a object
@@ -179,16 +177,14 @@ def main():
 	group = parser.add_mutually_exclusive_group(required=False)
 	group.add_argument('--new-profile',dest='new',action='store_true', help='Create a new user login profile')
 	group.add_argument('--delete-profile',dest='delete',action='store_true', help='Delete existing user profile')
-	parser.add_argument('-c', dest='config', required=False, help='Path to configuration folder')
+	parser.add_argument('-c', dest='config', required=False, help='Path to Alup folder')
 	args = parser.parse_args()
 
 	global work_directory
 	if args.config is None:
-		work_directory = os.path.expanduser("~") + "./alup"
+		work_directory = os.path.expanduser("~") + "/.alup/"
 	else:
 		work_directory = args.config
-
-	setup_logging()
 
 	# Check if alup work directory exists
 	if os.path.isdir(work_directory) == False:
@@ -196,6 +192,7 @@ def main():
 		print("Configuration folder not found")
 		sys.exit(1)
 
+	setup_logging()
 	global logger
 	logger = logging.getLogger('Auto Login UniPi')
 
