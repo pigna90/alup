@@ -71,7 +71,7 @@ $ systemctl enable alup.service
 
 ```
 ## Issues and bugs
-For any bugs or issues, please contact me via [e-mail] and send me the logs located under `.alup/log/`
+For any bugs or issues use the Issues section or contact me via [e-mail]. Please **attach the logs** located under `.alup/log/`.  
 
 ## Author
 Alessandro Romano
