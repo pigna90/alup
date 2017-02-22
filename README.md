@@ -14,6 +14,7 @@ Alup works with these extra python modules:
 * **requests**
 
 Install them simply by using pip.  
+**Note**: Be sure you've installed for **python3**
 
 ## Installation
 
