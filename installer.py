@@ -46,8 +46,8 @@ def main():
 				else:
 					print(line.replace("config_path", alup_dir), end='')
 
-		print("\nComplete by run as super user:")
-		print("# cp alup /usr/bin/")
+		print("\nComplete by run the following as super user:")
+		print("# cp alup /usr/local/bin/")
 		print("If you have systemd also:")
 		print("# cp alup.service /etc/systemd/system/ \n")
 
@@ -56,7 +56,7 @@ def main():
 			print("Deleting " + alup_dir)
 			shutil.rmtree(alup_dir)
 			print("\nComplete by run as super user:")
-			print("# rm /usr/bin/alup")
+			print("# rm /usr/local/bin/alup")
 			print("If you have systemd, disable the service and:")
 			print("# rm /etc/systemd/system/alup.service \n")
 		else:

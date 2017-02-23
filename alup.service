@@ -7,7 +7,7 @@ After=network.target network-online.target
 User=user_name
 Type=simple
 WorkingDirectory=config_path
-ExecStart=/usr/bin/alup -c config_path
+ExecStart=/usr/local/bin/alup -c config_path
 
 [Install]
 WantedBy=multi-user.target
