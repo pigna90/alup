@@ -8,14 +8,16 @@ The first reason is my Raspberry Pi. Alup helps me to login without monitor thro
 Then i used Alup also for my laptop and i decided to improve it in order to help someone else.  
 I'm lazy, that's all.
 
-### Extra modules
+## Extra modules
 Alup works with these extra python modules:  
 * **bs4**
 * **requests**
 
-Install them simply by using pip.
+Install them simply by using pip.  
+**Note**: Be sure you've installed for **python3**
 
-### Installation
+## Installation
+
 Download alup:
 ```sh
 $ git clone https://github.com/pigna90/alup.git
@@ -33,7 +35,8 @@ Copy the script manually as a super users:
 
 ```
 **Note**: `.alup/` folder will be installed as an hiden directory
-### Usage
+
+## Usage
 Run Alup:
 ```sh
 $ alup
@@ -50,7 +53,8 @@ $ alup -c /path/to/.alup
 
 ```
 **Note**: for more commands, run the scripts with -h (--help) command.
-### Auto-run (systemd)
+
+## Auto-run (systemd)
 A systemd service will be created after installation. Copy it in systemd services directory as super user:
 ```sh
 # cp alup.service /etc/systemd/system/
@@ -66,10 +70,10 @@ Start automaticaly:
 $ systemctl enable alup.service
 
 ```
-### Issues and bugs
-For any bugs or issues, please contact me via [e-mail] and send me the logs located under `.alup/log/`
+## Issues and bugs
+For any bugs or issues use the Issues section or contact me via [e-mail]. Please **attach the logs** located under `.alup/log/`.  
 
-### Author
+## Author
 Alessandro Romano
 
 [e-mail]: mailto:alessandro.romano@linux.com
