@@ -2,6 +2,7 @@
 
 Alup (**A**utomatic **L**ogin for **U**niversity of **P**isa) is a python script that provides to keep you logged on **University Of Pisa captive portal (Area SerRA)**.
 After configuration of Alup with your credential, the login session will be managed automatically  in order to avoid the logout due to timeout or connection issues.  
+Alup works for **Linux**, **Mac** and **Windows** except for the autorun part.
   
 ### Why Alup?
 The first reason is my Raspberry Pi. Alup helps me to login without monitor through ssh by managing the captive portal connection.  
@@ -31,7 +32,7 @@ $ python3 installer.py install
 If the installation directory is not specified then Alup will be installed in your home directory.  
 Copy the script manually as a super users:
 ```sh
-# cp alup /usr/bin/
+# cp alup /usr/local/bin/
 
 ```
 **Note**: `.alup/` folder will be installed as an hiden directory
