@@ -167,14 +167,12 @@ def is_unipi():
 def get_auth_domain():
 	try:
 		s = requests.get("https://github.com",verify=False)
-	except requests.ConnectionError:
-		logger.debug("Exception is_unipi: Connection Error")
-		return False
-	while True:
 		logger.debug("Trying to get auth URL domain...")
 		if "auth" in s.text:
 			return s.text.split("URL")[1].split("=")[1].split("auth/")[0]
-		time.sleep(2)
+	except requests.ConnectionError:
+		logger.debug("Exception get_auth_domain: Connection Error")
+		return False
 
 def main():
 	parser = argparse.ArgumentParser(description='Automatic Login for University of Pisa (Captive Portal)',add_help=True)
@@ -233,7 +231,7 @@ def main():
 	# Infinite loop to check internet connection
 	while True:
 		# Make reconnection if internet connection is down and the domain is UniPi
-		if internet_on() == False and is_unipi():
+		if internet_on() == False and is_unipi() and get_auth_domain() != False:
 			logger.debug("Reconnection")
 			domain_url = get_auth_domain()
 			response_login = s.get(domain_url + auth_url)
