@@ -1,13 +1,13 @@
 # Alup (Automatic Login for University of Pisa)
 
-Alup (**A**utomatic **L**ogin for **U**niversity of **P**isa) is a python script that provides to keep you logged on **University Of Pisa captive portal (Area SerRA)**.
-After configuration of Alup with your credential, the login session will be managed automatically  in order to avoid the logout due to timeout or connection issues.  
-Alup works for **Linux**, **Mac** and **Windows** except for the autorun part.
+Alup (**A**utomatic **L**ogin for **U**niversity of **P**isa) is a Python script provides to keep you logged on **University Of Pisa captive portal (Area SerRA)**.
+After configuration of Alup with your credentials, the login session will be managed automatically in order to avoid logout due to timeout or connection issues.  
+Alup works for **Linux**, **Mac** and **Windows** (excepts for the autorun part).
   
 ### Why Alup?
-The first reason is my Raspberry Pi. Alup helps me to login without monitor through ssh by managing the captive portal connection.  
-Then i used Alup also for my laptop and i decided to improve it in order to help someone else.  
-I'm lazy, that's all.
+The first reason is my Raspberry Pi. Alup helps me to logging in without any monitor through ssh by managing the captive portal connection.  
+I've being using Alup also for my laptop so I decided to improve it in order to help someone else.  
+I'm lazy, that's all!
 
 ## Extra modules
 Alup works with these extra python modules:  
@@ -15,21 +15,21 @@ Alup works with these extra python modules:
 * **requests**
 
 Install them simply by using pip.  
-**Note**: Be sure you've installed for **python3**
+**Note**: be sure you install them for **python3**
 
 ## Installation
 
-Download alup:
+Download:
 ```sh
 $ git clone https://github.com/pigna90/alup.git
 $ cd alup
 ```
-Install Alup by using the following script:
+Install:
 ```sh
 $ python3 installer.py install
 
 ```
-If the installation directory is not specified then Alup will be installed in your home directory.  
+If the installation directory isn't specified then Alup will be installed in your home directory.  
 Copy the script manually as a super users:
 ```sh
 # cp alup /usr/local/bin/
@@ -38,7 +38,7 @@ Copy the script manually as a super users:
 **Note**: `.alup/` folder will be installed as an hiden directory
 
 ## Usage
-Run Alup:
+Run:
 ```sh
 $ alup
 
@@ -48,15 +48,15 @@ Create a new profile and run:
 $ alup --new-profile
 
 ```
-Run with a custom directory:
+Run from a custom directory:
 ```sh
 $ alup -c /path/to/.alup
 
 ```
-**Note**: for more commands, run the scripts with -h (--help) command.
+**Note**: for more commands please use `-h (--help)` command.
 
 ## Auto-run (systemd)
-A systemd service will be created after installation. Copy it in systemd services directory as super user:
+Installation script creates a systemd configuration file as well. Copy it in your systemd services directory as super user:
 ```sh
 # cp alup.service /etc/systemd/system/
 
@@ -72,9 +72,7 @@ $ systemctl enable alup.service
 
 ```
 ## Issues and bugs
-For any bugs or issues use the Issues section or contact me via [e-mail]. Please **attach the logs** located under `.alup/log/`.  
+For any bugs or issues use the Issues section or create a new pull request. Please **attach the logs** located under `.alup/log/`.  
 
 ## Author
 Alessandro Romano
-
-[e-mail]: mailto:alessandro.romano@linux.com
