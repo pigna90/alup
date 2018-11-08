@@ -73,6 +73,3 @@ $ systemctl enable alup.service
 ```
 ## Issues and bugs
 For any bugs or issues use the Issues section or create a new pull request. Please **attach the logs** located under `.alup/log/`.  
-
-## Author
-Alessandro Romano
